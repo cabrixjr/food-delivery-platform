@@ -10,7 +10,7 @@ import Explore from './pages/Client/Explore';
 import NearMe from './pages/Client/NearMe';
 import Activity from './pages/Client/Activity';
 import UserSettings from './pages/Client/Settings';
-import HotelDashboard from './pages/Hotel/Dashboard';
+import HotelDashboard from './pages/hotel/Dashboard';
 import AdminDashboard from './pages/Admin/Dashboard';
 
 function App() {
