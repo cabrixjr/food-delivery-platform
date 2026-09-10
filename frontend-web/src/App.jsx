@@ -5,7 +5,7 @@ import { LocationProvider } from './context/LocationContext';
 import Navbar from './components/Common/Navbar';
 
 // Auth Pages
-import Login from './pages/Auth/Login';
+import Login from './pages/Auth/login';
 import Register from './pages/Auth/Register';
 
 // Page Views
