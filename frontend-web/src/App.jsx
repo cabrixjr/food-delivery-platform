@@ -4,6 +4,10 @@ import { AuthProvider } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import Navbar from './components/Common/Navbar';
 
+// Auth Pages
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+
 // Page Views
 import Home from './pages/Client/Home';
 import Explore from './pages/Client/Explore';
@@ -22,6 +26,10 @@ function App() {
             <Navbar />
             <main className="flex-1">
               <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
                 {/* Client Core Pages */}
                 <Route path="/home" element={<Home />} />
                 <Route path="/explore" element={<Explore />} />
