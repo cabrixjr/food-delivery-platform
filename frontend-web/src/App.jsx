@@ -1,11 +1,25 @@
-// frontend-web/src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Navbar from './components/Navbar';
-import Login from './pages/Auth/Login';
+import { LocationProvider } from './context/LocationContext';
+
+// Import matching EXACT file path casing for Vercel Linux builder
+import Navbar from './components/Common/navbar';
+
+// Auth Pages (capitalized 'Login' matching file system)
+import Login from './pages/Auth/login';
 import Register from './pages/Auth/Register';
 
+// Page Views
+import Home from './pages/Client/Home';
+import Explore from './pages/Client/Explore';
+import NearMe from './pages/Client/NearMe';
+import Activity from './pages/Client/Activity';
+import UserSettings from './pages/Client/Settings';
+import HotelDashboard from './pages/hotel/Dashboard';
+import AdminDashboard from './pages/Admin/Dashboard';
+
+// Route Guard Component
 function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
 
@@ -14,50 +28,53 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/near-me" replace />;
   }
 
   return children;
 }
 
-function AppRoutes() {
+function AppContent() {
+  const { user } = useAuth();
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <main className="flex-1">
+        <Routes>
+          {/* Public Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/Register" element={<Register />} />
 
-        {/* Protected Dashboard Routes */}
-        <Route
-          path="/near-me"
-          element={
-            <ProtectedRoute allowedRoles={['CLIENT', 'HOTEL', 'ADMIN']}>
-              <div className="p-8 text-center text-xl font-bold">Client Dashboard / Map Feed</div>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/hotel/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['HOTEL', 'ADMIN']}>
-              <div className="p-8 text-center text-xl font-bold">Hotel Partner Dashboard</div>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <div className="p-8 text-center text-xl font-bold">System Admin Dashboard</div>
-            </ProtectedRoute>
-          }
-        />
+          {/* Client Core Pages */}
+          <Route path="/Home" element={<Home />} />
+          <Route path="/Explore" element={<Explore />} />
+          <Route path="/Near-me" element={<NearMe />} />
+          <Route path="/Activity" element={<Activity />} />
+          <Route path="/Settings" element={<UserSettings />} />
 
-        {/* Fallback Route */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+          {/* Protected Dashboard Pages */}
+          <Route
+            path="/hotel/Dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL', 'ADMIN']}>
+                <HotelDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/Dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback Redirect */}
+          <Route path="*" element={<Navigate to={user ? "/near-me" : "/login"} replace />} />
+        </Routes>
+      </main>
     </div>
   );
 }
@@ -65,9 +82,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
+      <LocationProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </LocationProvider>
     </AuthProvider>
   );
 }
