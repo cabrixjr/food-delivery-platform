@@ -1,18 +1,34 @@
+// frontend-web/src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
 export const DEMO_CREDENTIALS = {
-  CLIENT: { email: 'client@foodfinder.com', password: 'password123', role: 'CLIENT', name: 'Alex Johnson' },
-  HOTEL: { email: 'hotel@foodfinder.com', password: 'password123', role: 'HOTEL', name: 'Grand Spice Palace' },
-  ADMIN: { email: 'admin@foodfinder.com', password: 'password123', role: 'ADMIN', name: 'System Admin' },
+  CLIENT: {
+    email: 'client@foodfinder.com',
+    password: 'password123',
+    role: 'CLIENT',
+    name: 'Alex Johnson',
+  },
+  HOTEL: {
+    email: 'hotel@foodfinder.com',
+    password: 'password123',
+    role: 'HOTEL',
+    name: 'Grand Spice Palace',
+  },
+  ADMIN: {
+    email: 'admin@foodfinder.com',
+    password: 'password123',
+    role: 'ADMIN',
+    name: 'System Admin',
+  },
 };
 
 export const AuthProvider = ({ children }) => {
-  // Always initialize as null for guest state unless user explicitly logged in previously
+  // Start as null (logged out) unless explicit valid token/user exists in localStorage
   const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('foodfinder_user');
     try {
-      const savedUser = localStorage.getItem('foodfinder_user');
       return savedUser ? JSON.parse(savedUser) : null;
     } catch {
       return null;
@@ -20,12 +36,8 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [usersDatabase, setUsersDatabase] = useState(() => {
-    try {
-      const savedDb = localStorage.getItem('foodfinder_users_db');
-      return savedDb ? JSON.parse(savedDb) : Object.values(DEMO_CREDENTIALS);
-    } catch {
-      return Object.values(DEMO_CREDENTIALS);
-    }
+    const savedDb = localStorage.getItem('foodfinder_users_db');
+    return savedDb ? JSON.parse(savedDb) : Object.values(DEMO_CREDENTIALS);
   });
 
   useEffect(() => {
@@ -38,10 +50,10 @@ export const AuthProvider = ({ children }) => {
     );
 
     if (foundUser) {
-      const { password: _, ...userData } = foundUser;
-      setUser(userData);
-      localStorage.setItem('foodfinder_user', JSON.stringify(userData));
-      return { success: true, user: userData };
+      const { password: _, ...userWithoutPassword } = foundUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem('foodfinder_user', JSON.stringify(userWithoutPassword));
+      return { success: true, user: userWithoutPassword };
     }
     return { success: false, error: 'Invalid email or password' };
   };
@@ -56,10 +68,10 @@ export const AuthProvider = ({ children }) => {
     }
 
     setUsersDatabase((prev) => [...prev, newUser]);
-    const { password: _, ...userData } = newUser;
-    setUser(userData);
-    localStorage.setItem('foodfinder_user', JSON.stringify(userData));
-    return { success: true, user: userData };
+    const { password: _, ...userWithoutPassword } = newUser;
+    setUser(userWithoutPassword);
+    localStorage.setItem('foodfinder_user', JSON.stringify(userWithoutPassword));
+    return { success: true, user: userWithoutPassword };
   };
 
   const logout = () => {
@@ -68,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, logoutSession: logout, DEMO_CREDENTIALS }}>
+    <AuthContext.Provider value={{ user, login, register, logout, DEMO_CREDENTIALS }}>
       {children}
     </AuthContext.Provider>
   );
