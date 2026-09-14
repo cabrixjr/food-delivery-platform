@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 
 // Import matching EXACT file path casing for Vercel Linux builder
-import Navbar from './components/Common/navbar';
+import Navbar from './components/Common/Navbar';
 
 // Auth Pages (capitalized 'Login' matching file system)
 import Login from './pages/Auth/login';
