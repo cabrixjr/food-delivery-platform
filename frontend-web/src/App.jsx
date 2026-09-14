@@ -1,55 +1,73 @@
+// frontend-web/src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { LocationProvider } from './context/LocationContext';
-import Navbar from './components/Common/Navbar';
-
-// Auth Pages
-import Login from './pages/Auth/login';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Navbar from './components/Navbar';
+import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 
-// Page Views
-import Home from './pages/Client/Home';
-import Explore from './pages/Client/Explore';
-import NearMe from './pages/Client/NearMe';
-import Activity from './pages/Client/Activity';
-import UserSettings from './pages/Client/Settings';
-import HotelDashboard from './pages/hotel/Dashboard';
-import AdminDashboard from './pages/Admin/Dashboard';
+function ProtectedRoute({ children, allowedRoles }) {
+  const { user } = useAuth();
 
-function App() {
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+function AppRoutes() {
   return (
-    <AuthProvider>
-      <LocationProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-            <Navbar />
-            <main className="flex-1">
-              <Routes>
-                {/* Auth Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-                {/* Client Core Pages */}
-                <Route path="/home" element={<Home />} />
-                <Route path="/explore" element={<Explore />} />
-                <Route path="/near-me" element={<NearMe />} />
-                <Route path="/activity" element={<Activity />} />
-                <Route path="/settings" element={<UserSettings />} />
+        {/* Protected Dashboard Routes */}
+        <Route
+          path="/near-me"
+          element={
+            <ProtectedRoute allowedRoles={['CLIENT', 'HOTEL', 'ADMIN']}>
+              <div className="p-8 text-center text-xl font-bold">Client Dashboard / Map Feed</div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hotel/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['HOTEL', 'ADMIN']}>
+              <div className="p-8 text-center text-xl font-bold">Hotel Partner Dashboard</div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <div className="p-8 text-center text-xl font-bold">System Admin Dashboard</div>
+            </ProtectedRoute>
+          }
+        />
 
-                {/* Dashboard Pages */}
-                <Route path="/hotel/dashboard" element={<HotelDashboard />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-
-                {/* Default Fallback Redirect */}
-                <Route path="*" element={<Navigate to="/near-me" replace />} />
-              </Routes>
-            </main>
-          </div>
-        </Router>
-      </LocationProvider>
-    </AuthProvider>
+        {/* Fallback Route */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
+  );
+}
